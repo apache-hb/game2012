@@ -8,7 +8,8 @@ project('hello', [ 'c', 'cpp' ],
 )
 
 glad = subproject('glad').get_variable('glad')
+d3d12 = subproject('d3d12').get_variable('d3d12')
 
 glfw = dependency('glfw3', fallback : [ 'glfw', 'glfw3' ])
 
-executable('hello', 'src/main.cpp', dependencies : [ glad, glfw ])
+executable('hello', 'src/main.cpp', dependencies : [ glad, d3d12, glfw ])
