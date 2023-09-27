@@ -8,8 +8,27 @@ project('hello', [ 'c', 'cpp' ],
 )
 
 glad = subproject('glad').get_variable('glad')
-d3d12 = subproject('d3d12').get_variable('d3d12')
 
 glfw = dependency('glfw3', fallback : [ 'glfw', 'glfw3' ])
 
-executable('hello', 'src/main.cpp', dependencies : [ glad, d3d12, glfw ])
+src = [
+    # imgui
+    'src/imgui/imgui.cpp',
+    'src/imgui/imgui_demo.cpp',
+    'src/imgui/imgui_draw.cpp',
+    'src/imgui/imgui_widgets.cpp',
+    'src/imgui/imgui_tables.cpp',
+    'src/imgui/backends/imgui_impl_glfw.cpp',
+    'src/imgui/backends/imgui_impl_opengl3.cpp',
+
+    # main
+    'src/main.cpp',
+    'src/mesh.cpp',
+    'src/program.cpp'
+]
+
+executable('hello', src,
+    include_directories : [ 'src' ],
+    dependencies : [ glad, glfw ]
+)
+
