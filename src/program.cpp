@@ -3,6 +3,24 @@
 #include "glad/glad.h"
 
 #include <iostream>
+#include <fstream>
+
+std::string loadFile(const char *path) {
+    std::ifstream fd(path);
+    if (!fd.is_open()) {
+        std::cout << "Failed to open file: " << path << std::endl;
+        std::abort();
+    }
+
+    std::string contents;
+    fd.seekg(0, std::ios::end);
+    contents.resize(fd.tellg());
+    fd.seekg(0, std::ios::beg);
+    fd.read(contents.data(), contents.size());
+    fd.close();
+
+    return contents;
+}
 
 namespace {
     template<typename FG, typename FL>

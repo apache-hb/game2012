@@ -19,9 +19,13 @@ Mesh::Mesh(std::span<const Vertex> vertices, std::span<const unsigned> indices) 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
 
-    // our second 3 floats are the colour
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, colour));
+    // then uv coordinates
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texcoord));
     glEnableVertexAttribArray(1);
+
+    // then colour
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, colour));
+    glEnableVertexAttribArray(2);
 
     // index buffer
     glGenBuffers(1, &ebo);

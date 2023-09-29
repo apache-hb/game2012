@@ -15,9 +15,9 @@
 
 constexpr auto kTriangleVertexData = std::to_array<Vertex>({
     // positions      // colours
-    { {-0.5f, -0.5f, 0.0f}, { 1.0f, 0.0f, 0.0 } },
-    { {0.5f, -0.5f, 0.0f}, { 0.0f, 1.0f, 0.0 } },
-    { {0.0f, 0.5f, 0.0f}, { 0.0f, 0.0f, 1.0 } }
+    { {-0.5f, -0.5f, 0.0f}, {0.f, 0.f}, { 1.0f, 0.0f, 0.0 } },
+    { {0.5f, -0.5f, 0.0f}, {0.f, 0.f}, { 0.0f, 1.0f, 0.0 } },
+    { {0.0f, 0.5f, 0.0f}, {0.f, 0.f}, { 0.0f, 0.0f, 1.0 } }
 });
 
 constexpr auto kTriangleIndicies = std::to_array<unsigned>({
@@ -27,11 +27,11 @@ constexpr auto kTriangleIndicies = std::to_array<unsigned>({
 // square
 
 constexpr auto kSquareVertexData = std::to_array<Vertex>({
-    // positions      // colours
-    { {0.5f, 0.5f, 0.0f    }, { 1.0f, 0.0f, 0.0 } },
-    { {0.5f, -0.5f, 0.0f,  }, { 0.0f, 1.0f, 0.0 } },
-    { {-0.5f, -0.5f, 0.0f, }, { 0.0f, 0.0f, 1.0 } },
-    { {-0.5f, 0.5f, 0.0f,  }, { 1.0f, 1.0f, 0.0 } }
+    // positions   // uv    // colours
+    { {0.5f, 0.5f, 0.0f    }, { 1.f, 1.f }, { 1.0f, 0.0f, 0.0 } },
+    { {0.5f, -0.5f, 0.0f,  }, { 1.f, 0.f }, { 0.0f, 1.0f, 0.0 } },
+    { {-0.5f, -0.5f, 0.0f, }, { 0.f, 0.f }, { 0.0f, 0.0f, 1.0 } },
+    { {-0.5f, 0.5f, 0.0f,  }, { 0.f, 1.f }, { 1.0f, 1.0f, 0.0 } }
 });
 
 constexpr auto kSquareIndicies = std::to_array<unsigned>({
@@ -48,7 +48,7 @@ Mesh makeCircle(size_t points) {
     verts.reserve(points + 1);
     indices.reserve(points * 3);
 
-    verts.push_back({ {0.0f, 0.0f, 0.0f}, { 1.0f, 1.0f, 1.0 } });
+    verts.push_back({ {0.0f, 0.0f, 0.0f}, {0.f, 0.f}, { 1.0f, 1.0f, 1.0 } });
 
     for (size_t i = 0; i < points; ++i) {
         float angle = 2.0f * 3.1415926f * float(i) / float(points);
@@ -56,7 +56,7 @@ Mesh makeCircle(size_t points) {
         float x = std::cos(angle);
         float y = std::sin(angle);
 
-        verts.push_back({ {x, y, 0.0f}, { 1.0f, 1.0f, 1.0 } });
+        verts.push_back({ {x, y, 0.0f}, {0.f, 0.f}, { 1.0f, 1.0f, 1.0 } });
     }
 
     for (unsigned i = 0; i < points; ++i) {
@@ -77,46 +77,16 @@ Mesh makeCircle(size_t points) {
 
 constexpr auto kDiamondVertexData = std::to_array<Vertex>({
     // positions      // colours
-    { {0.5f, 0.0f, 0.0f    }, { 1.0f, 0.0f, 0.0 } },
-    { {0.0f, 0.5f, 0.0f,  }, { 0.0f, 1.0f, 0.0 } },
-    { {-0.5f, 0.0f, 0.0f, }, { 0.0f, 0.0f, 1.0 } },
-    { {0.0f, -0.5f, 0.0f,  }, { 1.0f, 1.0f, 0.0 } }
+    { {0.5f, 0.0f, 0.0f    }, {0.f, 0.f}, { 1.0f, 0.0f, 0.0 } },
+    { {0.0f, 0.5f, 0.0f,  }, {0.f, 0.f}, { 0.0f, 1.0f, 0.0 } },
+    { {-0.5f, 0.0f, 0.0f, }, {0.f, 0.f}, { 0.0f, 0.0f, 1.0 } },
+    { {0.0f, -0.5f, 0.0f,  }, {0.f, 0.f}, { 1.0f, 1.0f, 0.0 } }
 });
 
 constexpr auto kDiamondIndicies = std::to_array<unsigned>({
     0, 1, 2,
     0, 2, 3
 });
-
-constexpr auto kVertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColour;
-
-out vec3 ourColour;
-
-void main() {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-    ourColour = aColour;
-}
-)";
-
-constexpr auto kFragmentShaderSource = R"(
-#version 330 core
-out vec4 FragColor;
-in vec3 ourColour;
-
-uniform int useVertexColour;
-uniform vec3 colour;
-
-void main() {
-    if (useVertexColour != 0) {
-        FragColor = vec4(ourColour, 1.0);
-    } else {
-        FragColor = vec4(colour, 1.0);
-    }
-}
-)";
 
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -179,8 +149,13 @@ int main() {
         makeCircle(32)
     };
 
-    unsigned shader = createShader(kVertexShaderSource, kFragmentShaderSource);
-    int toggleColourIndex = glGetUniformLocation(shader, "useVertexColour");
+    const char *colourMethodNames[] = { "Triangle Colour", "Vertex Colour", "Perlin Noise", "UV" };
+
+    auto vs = loadFile("data/perlin.vs.glsl");
+    auto fs = loadFile("data/perlin.fs.glsl");
+
+    unsigned shader = createShader(vs.c_str(), fs.c_str());
+    int colourMethodIndex = glGetUniformLocation(shader, "colourMethod");
     int vertexColour = glGetUniformLocation(shader, "colour");
 
     // uncomment this call to draw in wireframe polygons.
@@ -188,7 +163,7 @@ int main() {
 
     ImVec4 clearColour = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     ImVec4 triangleColour = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-    int useVertexColour = false;
+    int colourMethod = false;
     int currentMesh = 0;
     bool animateColour = false;
     while (!glfwWindowShouldClose(window)) {
@@ -203,9 +178,7 @@ int main() {
             ImGui::ColorEdit3("Clear Colour", &clearColour.x);
             ImGui::ColorEdit3("Triangle Colour (Via UBO)", &triangleColour.x);
 
-            bool it = useVertexColour;
-            ImGui::Checkbox("Use Vertex Colour", &it);
-            useVertexColour = it;
+            ImGui::Combo("Colour Method", &colourMethod, colourMethodNames, IM_ARRAYSIZE(colourMethodNames));
 
             ImGui::Checkbox("Animate Colour", &animateColour);
 
@@ -230,10 +203,10 @@ int main() {
                 std::sin(now + 2.0f) * 0.5f + 0.5f,
                 std::sin(now + 4.0f) * 0.5f + 0.5f
             );
-            glUniform1i(toggleColourIndex, false);
+            glUniform1i(colourMethodIndex, false);
         } else {
             glUniform3f(vertexColour, triangleColour.x, triangleColour.y, triangleColour.z);
-            glUniform1i(toggleColourIndex, useVertexColour);
+            glUniform1i(colourMethodIndex, colourMethod);
         }
 
         // draw via the index buffer

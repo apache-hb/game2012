@@ -6,12 +6,17 @@ struct Vec3 {
     float x, y, z;
 };
 
+struct Vec2 {
+    float u, v;
+};
+
 struct Colour {
     float r, g, b;
 };
 
 struct Vertex {
     Vec3 position;
+    Vec2 texcoord;
     Colour colour;
 };
 
