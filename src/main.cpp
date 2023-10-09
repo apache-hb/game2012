@@ -11,82 +11,56 @@
 #include "program.h"
 #include "mesh.h"
 
-// triangle
-
-constexpr auto kTriangleVertexData = std::to_array<Vertex>({
-    // positions      // colours
-    { {-0.5f, -0.5f, 0.0f}, {0.f, 0.f}, { 1.0f, 0.0f, 0.0 } },
-    { {0.5f, -0.5f, 0.0f}, {0.f, 0.f}, { 0.0f, 1.0f, 0.0 } },
-    { {0.0f, 0.5f, 0.0f}, {0.f, 0.f}, { 0.0f, 0.0f, 1.0 } }
-});
-
-constexpr auto kTriangleIndicies = std::to_array<unsigned>({
-    0, 1, 2
-});
+#include <cmath>
 
 // square
 
-constexpr auto kSquareVertexData = std::to_array<Vertex>({
-    // positions   // uv    // colours
-    { {0.5f, 0.5f, 0.0f    }, { 1.f, 1.f }, { 1.0f, 0.0f, 0.0 } },
-    { {0.5f, -0.5f, 0.0f,  }, { 1.f, 0.f }, { 0.0f, 1.0f, 0.0 } },
-    { {-0.5f, -0.5f, 0.0f, }, { 0.f, 0.f }, { 0.0f, 0.0f, 1.0 } },
-    { {-0.5f, 0.5f, 0.0f,  }, { 0.f, 1.f }, { 1.0f, 1.0f, 0.0 } }
-});
-
 constexpr auto kSquareIndicies = std::to_array<unsigned>({
-    0, 1, 3,
-    1, 2, 3
+    0, 1,
+    1, 2,
+    2, 3,
+    3, 0
 });
 
-// circle
+struct float2 {
+    float x;
+    float y;
+};
 
-Mesh makeCircle(size_t points) {
-    std::vector<Vertex> verts;
-    std::vector<unsigned> indices;
+// M_PI is annoying to get on windows
+#define MY_PI 3.14159265358979323846f
 
-    verts.reserve(points + 1);
-    indices.reserve(points * 3);
+float2 rotatePoint(float2 point, float2 origin, float angleInDeg, float scale) {
+    float angleInRad = angleInDeg * (MY_PI / 180.f);
 
-    verts.push_back({ {0.0f, 0.0f, 0.0f}, {0.f, 0.f}, { 1.0f, 1.0f, 1.0 } });
+    float cosTheta = std::cos(angleInRad);
+    float sinTheta = std::sin(angleInRad);
 
-    for (size_t i = 0; i < points; ++i) {
-        float angle = 2.0f * 3.1415926f * float(i) / float(points);
+    float x = point.x - origin.x;
+    float y = point.y - origin.y;
 
-        float x = std::cos(angle);
-        float y = std::sin(angle);
+    float x1 = x * cosTheta - y * sinTheta;
+    float y1 = x * sinTheta + y * cosTheta;
 
-        verts.push_back({ {x, y, 0.0f}, {0.f, 0.f}, { 1.0f, 1.0f, 1.0 } });
-    }
-
-    for (unsigned i = 0; i < points; ++i) {
-        indices.push_back(0);
-        indices.push_back(i + 1);
-        indices.push_back(i + 2);
-    }
-
-    // stitch the last point to the first
-    indices.push_back(0);
-    indices.push_back(unsigned(points));
-    indices.push_back(1);
-
-    return Mesh(verts, indices);
+    return { (x1 + origin.x) * scale, (y1 + origin.y) * scale };
 }
 
-// diamond
+std::array<Vertex2, 4> makeSquare(float scale, float rotationInDeg) {
+    float2 origin = { 0.0, 0.0 };
 
-constexpr auto kDiamondVertexData = std::to_array<Vertex>({
-    // positions      // colours
-    { {0.5f, 0.0f, 0.0f    }, {0.f, 0.f}, { 1.0f, 0.0f, 0.0 } },
-    { {0.0f, 0.5f, 0.0f,  }, {0.f, 0.f}, { 0.0f, 1.0f, 0.0 } },
-    { {-0.5f, 0.0f, 0.0f, }, {0.f, 0.f}, { 0.0f, 0.0f, 1.0 } },
-    { {0.0f, -0.5f, 0.0f,  }, {0.f, 0.f}, { 1.0f, 1.0f, 0.0 } }
-});
+    float2 p1 = rotatePoint({ -1, -1 }, origin, rotationInDeg, scale);
+    float2 p2 = rotatePoint({ 1, -1 }, origin, rotationInDeg, scale);
+    float2 p3 = rotatePoint({ 1, 1 }, origin, rotationInDeg, scale);
+    float2 p4 = rotatePoint({ -1, 1 }, origin, rotationInDeg, scale);
 
-constexpr auto kDiamondIndicies = std::to_array<unsigned>({
-    0, 1, 2,
-    0, 2, 3
-});
+    return {
+        Vertex2{ { p1.x, p1.y, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+        Vertex2{ { p2.x, p2.y, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+        Vertex2{ { p3.x, p3.y, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+        Vertex2{ { p4.x, p4.y, 0.0f }, { 1.0f, 1.0f, 1.0f } }
+    };
+}
+
 
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -96,6 +70,18 @@ void processInput(GLFWwindow *window) {
 
 void fbResize(GLFWwindow*, int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+std::vector<Mesh> genMeshes(float baseScale, float baseRotation, float scaleStep, float rotationStep, size_t steps) {
+    std::vector<Mesh> squareMeshes = {};
+    for (size_t i = 0; i < steps; i++) {
+        auto squareVerts = makeSquare(baseScale, baseRotation);
+        squareMeshes.push_back(Mesh(squareVerts, kSquareIndicies));
+
+        baseRotation += rotationStep;
+        baseScale /= scaleStep;
+    }
+    return squareMeshes;
 }
 
 // settings
@@ -141,31 +127,23 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    const char *meshNames[4] = { "Triangle", "Square", "Diamond", "Circle" };
-    Mesh meshes[4] = {
-        { kTriangleVertexData, kTriangleIndicies },
-        { kSquareVertexData, kSquareIndicies },
-        { kDiamondVertexData, kDiamondIndicies },
-        makeCircle(32)
-    };
+    float baseRotation = 0.f;
+    float rotationStep = 45.f;
 
-    const char *colourMethodNames[] = { "Triangle Colour", "Vertex Colour", "Perlin Noise", "UV" };
+    float baseScale = 1.f;
+    float scaleStep = 1.42f;
+    int steps = 10;
+    std::vector<Mesh> squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
 
-    auto vs = loadFile("data/perlin.vs.glsl");
-    auto fs = loadFile("data/perlin.fs.glsl");
+    auto vs = loadFile("data/square.vs.glsl");
+    auto fs = loadFile("data/square.fs.glsl");
 
     unsigned shader = createShader(vs.c_str(), fs.c_str());
-    int colourMethodIndex = glGetUniformLocation(shader, "colourMethod");
-    int vertexColour = glGetUniformLocation(shader, "colour");
 
     // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     ImVec4 clearColour = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
-    ImVec4 triangleColour = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-    int colourMethod = false;
-    int currentMesh = 0;
-    bool animateColour = false;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         processInput(window);
@@ -176,41 +154,37 @@ int main() {
 
         ImGui::Begin("Options");
             ImGui::ColorEdit3("Clear Colour", &clearColour.x);
-            ImGui::ColorEdit3("Triangle Colour (Via UBO)", &triangleColour.x);
+            if (ImGui::SliderInt("Steps", &steps, 1, 100)) {
+                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+            }
 
-            ImGui::Combo("Colour Method", &colourMethod, colourMethodNames, IM_ARRAYSIZE(colourMethodNames));
+            if (ImGui::SliderFloat("Base scale", &baseScale, 0.1f, 1.f)) {
+                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+            }
 
-            ImGui::Checkbox("Animate Colour", &animateColour);
+            if (ImGui::SliderFloat("Base rotation", &baseRotation, 0.f, 360.f)) {
+                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+            }
 
-            ImGui::Combo("Mesh", &currentMesh, meshNames, IM_ARRAYSIZE(meshNames));
+            if (ImGui::SliderFloat("Scale step", &scaleStep, 1.1f, 2.f)) {
+                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+            }
 
-            ImGui::Text("1. is covered by the triangle");
-            ImGui::Text("2. is covered using the `Use Vertex Colour` checkbox");
-            ImGui::TextWrapped("3. is covered using the `Animate Colour` checkbox. You can also manually adjust the mesh and background colours using the colour pickers");
-            ImGui::Text("consult the Mesh dropdown for 4 and 5");
+            if (ImGui::SliderFloat("Rotation step", &rotationStep, 0.f, 90.f)) {
+                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+            }
         ImGui::End();
 
         glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shader);
-        meshes[currentMesh].bind();
-
-        if (animateColour) {
-            float now = (float)glfwGetTime();
-            glUniform3f(vertexColour,
-                std::sin(now) * 0.5f + 0.5f,
-                std::sin(now + 2.0f) * 0.5f + 0.5f,
-                std::sin(now + 4.0f) * 0.5f + 0.5f
-            );
-            glUniform1i(colourMethodIndex, false);
-        } else {
-            glUniform3f(vertexColour, triangleColour.x, triangleColour.y, triangleColour.z);
-            glUniform1i(colourMethodIndex, colourMethod);
+        for (size_t i = 0; i < steps; i++) {
+            squareMeshes[i].bind();
+            squareMeshes[i].draw();
         }
-
         // draw via the index buffer
-        meshes[currentMesh].draw();
+        //meshes[currentMesh].draw();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
