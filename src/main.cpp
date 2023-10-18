@@ -61,6 +61,36 @@ std::array<Vertex2, 4> makeSquare(float scale, float rotationInDeg) {
     };
 }
 
+Mesh makeSierpinski(size_t steps, bool blending) {
+    Vertex2 p1 = { { -1, -1, 0 }, { 1, 0, 0 } };
+    Vertex2 p2 = { { 1, -1, 0 }, { 0, 1, 0 } };
+    Vertex2 p3 = { { 0, 1, 0 }, { 0, 0, 1 } };
+
+    std::vector<Vertex2> verts = { p1, p2, p3 };
+    std::vector<unsigned> indicies = { 0, 1, 2 };
+
+    for (size_t i = 0; i < steps; i++) {
+        size_t index = rand() % 3;
+        auto& back = verts.back();
+        auto& point = verts[index];
+        Vertex2 newPoint = {
+            {
+                (point.position.x + back.position.x) / 2,
+                (point.position.y + back.position.y) / 2,
+                0
+            },
+            {
+                blending ? (point.colour.r + back.colour.r) / 2 : point.colour.r,
+                blending ? (point.colour.g + back.colour.g) / 2 : point.colour.g,
+                blending ? (point.colour.b + back.colour.b) / 2 : point.colour.b
+            }
+        };
+        verts.push_back(newPoint);
+        indicies.push_back(unsigned(verts.size() - 1));
+    }
+
+    return Mesh(verts, indicies);
+}
 
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -70,18 +100,6 @@ void processInput(GLFWwindow *window) {
 
 void fbResize(GLFWwindow*, int width, int height) {
     glViewport(0, 0, width, height);
-}
-
-std::vector<Mesh> genMeshes(float baseScale, float baseRotation, float scaleStep, float rotationStep, size_t steps) {
-    std::vector<Mesh> squareMeshes = {};
-    for (size_t i = 0; i < steps; i++) {
-        auto squareVerts = makeSquare(baseScale, baseRotation);
-        squareMeshes.push_back(Mesh(squareVerts, kSquareIndicies));
-
-        baseRotation += rotationStep;
-        baseScale /= scaleStep;
-    }
-    return squareMeshes;
 }
 
 // settings
@@ -127,13 +145,9 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    float baseRotation = 0.f;
-    float rotationStep = 45.f;
-
-    float baseScale = 1.f;
-    float scaleStep = 1.42f;
-    int steps = 10;
-    std::vector<Mesh> squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+    int steps = 1000;
+    bool blending = false;
+    auto triangle = makeSierpinski(steps, blending);
 
     auto vs = loadFile("data/square.vs.glsl");
     auto fs = loadFile("data/square.fs.glsl");
@@ -143,7 +157,7 @@ int main() {
     // uncomment this call to draw in wireframe polygons.
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    ImVec4 clearColour = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
+    ImVec4 clearColour = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         processInput(window);
@@ -154,24 +168,11 @@ int main() {
 
         ImGui::Begin("Options");
             ImGui::ColorEdit3("Clear Colour", &clearColour.x);
-            if (ImGui::SliderInt("Steps", &steps, 1, 100)) {
-                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+            if (ImGui::SliderInt("Steps", &steps, 1, 50000)) {
+                triangle = makeSierpinski(steps, blending);
             }
-
-            if (ImGui::SliderFloat("Base scale", &baseScale, 0.1f, 1.f)) {
-                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
-            }
-
-            if (ImGui::SliderFloat("Base rotation", &baseRotation, 0.f, 360.f)) {
-                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
-            }
-
-            if (ImGui::SliderFloat("Scale step", &scaleStep, 1.1f, 2.f)) {
-                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
-            }
-
-            if (ImGui::SliderFloat("Rotation step", &rotationStep, 0.f, 90.f)) {
-                squareMeshes = genMeshes(baseScale, baseRotation, scaleStep, rotationStep, steps);
+            if (ImGui::Checkbox("Blending", &blending)) {
+                triangle = makeSierpinski(steps, blending);
             }
         ImGui::End();
 
@@ -179,10 +180,8 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shader);
-        for (size_t i = 0; i < steps; i++) {
-            squareMeshes[i].bind();
-            squareMeshes[i].draw();
-        }
+        triangle.bind();
+        triangle.draw();
         // draw via the index buffer
         //meshes[currentMesh].draw();
 

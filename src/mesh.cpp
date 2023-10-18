@@ -39,5 +39,5 @@ void Mesh::bind() {
 
 void Mesh::draw() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glDrawElements(GL_LINE_LOOP, GLsizei(numIndices), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_POINTS, GLsizei(numIndices), GL_UNSIGNED_INT, 0);
 }
