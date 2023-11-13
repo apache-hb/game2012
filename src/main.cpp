@@ -1,3 +1,4 @@
+
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
@@ -10,22 +11,35 @@
 
 #include "program.h"
 #include "mesh.h"
+#include "camera.h" // terrible header higiene, this depends on glad but doesnt include it
 
 #include <cmath>
 
-// square
-
 // M_PI is annoying to get on windows
 #define MY_PI 3.14159265358979323846f
+
+Camera camera;
 
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
+
+    camera.processInput(window);
+}
+
+void processScroll(GLFWwindow*, double xoffset, double yoffset) {
+    camera.processScroll(xoffset, yoffset);
+}
+
+void processMouse(GLFWwindow* w, double xpos, double ypos) {
+    camera.processMouse(w, xpos, ypos);
 }
 
 void fbResize(GLFWwindow*, int width, int height) {
     glViewport(0, 0, width, height);
+    camera.screenWidth = float(width);
+    camera.screenHeight = float(height);
 }
 
 // settings
@@ -52,6 +66,11 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, fbResize);
+    glfwSetCursorPosCallback(window, processMouse);
+    glfwSetScrollCallback(window, processScroll);
+
+    camera.screenWidth = kWidth;
+    camera.screenHeight = kHeight;
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -71,14 +90,34 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    auto vs = loadFile("data/square.vs.glsl");
-    auto fs = loadFile("data/square.fs.glsl");
+    auto vs = loadFile("data/model.vs.glsl");
+    auto fs = loadFile("data/model.fs.glsl");
 
     unsigned shader = createShader(vs.c_str(), fs.c_str());
 
-    // uncomment this call to draw in wireframe polygons.
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // steal some models from my game for now
+    Model model0 = {
+        .mesh = loadObjMesh("data/models/default.model"),
+        .tex0 = Texture("data/images/assets/uv-coords.png"),
+        .tex1 = Texture("data/images/assets/player.png")
+    };
 
+    auto uModel = glGetUniformLocation(shader, "inModel");
+    auto uView = glGetUniformLocation(shader, "inView");
+    auto uProjection = glGetUniformLocation(shader, "inProjection");
+
+    auto uTexture0 = glGetUniformLocation(shader, "inTexture0");
+    auto uTexture1 = glGetUniformLocation(shader, "inTexture1");
+    auto uRatio = glGetUniformLocation(shader, "inRatio");
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glUseProgram(shader);
+    glEnable(GL_DEPTH_TEST);
+
+    glUniform1i(uTexture0, 0);
+    glUniform1i(uTexture1, 1);
+
+    float ratio = 1.f;
     ImVec4 clearColour = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -90,13 +129,36 @@ int main() {
 
         ImGui::Begin("Options");
             ImGui::ColorEdit3("Clear Colour", &clearColour.x);
+
+            ImGui::InputFloat3("position", &camera.cameraPos.x);
+            ImGui::InputFloat3("direction", &camera.cameraFront.x);
+
+            ImGui::InputFloat("fov", &camera.fov);
+            ImGui::InputFloat("speed", &camera.speed);
+            ImGui::InputFloat("sensitivity", &camera.sensitivity);
+
+            ImGui::SliderFloat("ratio", &ratio, 0.0f, 1.f);
             
         ImGui::End();
 
         glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(shader);
+        auto model = camera.getModel();
+        auto view = camera.getView();
+        auto projection = camera.getProjection();
+        glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);
+        glUniformMatrix4fv(uView, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(uProjection, 1, GL_FALSE, &projection[0][0]);
+
+        glUniform1f(uRatio, ratio);
+
+        model0.tex0.bind(0);
+        model0.tex1.bind(1);
+        
+        // model0.mesh.bind();
+        model0.mesh.bind();
+        model0.mesh.draw();
         // draw via the index buffer
         //meshes[currentMesh].draw();
 

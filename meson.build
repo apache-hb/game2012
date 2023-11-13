@@ -10,6 +10,7 @@ project('hello', [ 'c', 'cpp' ],
 glad = subproject('glad').get_variable('glad')
 glm = dependency('glm')
 glfw = dependency('glfw3')
+stb = subproject('stb').get_variable('stb')
 
 # i'd use gltf but im a little short on time
 tinyobj = subproject('tinyobj').get_variable('tinyobj')
@@ -28,11 +29,12 @@ src = [
     'src/main.cpp',
     'src/mesh.cpp',
     'src/obj.cpp',
+    'src/texture.cpp',
     'src/program.cpp'
 ]
 
 executable('hello', src,
     include_directories : [ 'src' ],
-    dependencies : [ glad, glm, glfw, tinyobj ]
+    cpp_args : [ '-DGLM_ENABLE_EXPERIMENTAL=1', '/wd4201' ],
+    dependencies : [ glad, glm, glfw, tinyobj, stb ]
 )
-
