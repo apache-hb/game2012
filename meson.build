@@ -8,8 +8,8 @@ project('hello', [ 'c', 'cpp' ],
 )
 
 glad = subproject('glad').get_variable('glad')
-
-glfw = dependency('glfw3', fallback : [ 'glfw', 'glfw3' ])
+glm = dependency('glm')
+glfw = dependency('glfw3')
 
 src = [
     # imgui
@@ -29,6 +29,6 @@ src = [
 
 executable('hello', src,
     include_directories : [ 'src' ],
-    dependencies : [ glad, glfw ]
+    dependencies : [ glad, glm, glfw ]
 )
 

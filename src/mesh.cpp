@@ -2,7 +2,13 @@
 
 #include "glad/glad.h"
 
-Mesh::Mesh(std::span<const Vertex2> vertices, std::span<const unsigned> indices) {
+constexpr std::array<VertexAttrib, 3> vertexAttribs = {
+    VertexAttrib{ 3, GL_FLOAT, offsetof(Vertex, position) },
+    VertexAttrib{ 2, GL_FLOAT, offsetof(Vertex, texcoord) },
+    VertexAttrib{ 3, GL_FLOAT, offsetof(Vertex, colour) }
+};
+
+Mesh::Mesh(std::span<const Vertex> vertices, std::span<const unsigned> indices) {
     numIndices = indices.size();
     numVertices = vertices.size();
 
@@ -14,15 +20,13 @@ Mesh::Mesh(std::span<const Vertex2> vertices, std::span<const unsigned> indices)
 
     // bind and upload the vertex data
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex2), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
-    // our first 3 floats are the position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex2), (void*)offsetof(Vertex2, position));
-    glEnableVertexAttribArray(0);
-
-    // then colour
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex2), (void*)offsetof(Vertex2, colour));
-    glEnableVertexAttribArray(1);
+    for (GLuint i = 0; i < vertexAttribs.size(); i++) {
+        const auto& attrib = vertexAttribs[i];
+        glVertexAttribPointer(i, attrib.size, attrib.type, GL_FALSE, sizeof(Vertex), (void*)attrib.offset);
+        glEnableVertexAttribArray(0);
+    }
 
     // index buffer
     glGenBuffers(1, &ebo);
