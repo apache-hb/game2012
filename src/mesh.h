@@ -42,3 +42,5 @@ private:
     unsigned vbo;
     unsigned ebo;
 };
+
+Mesh loadObjMesh(const char* path);

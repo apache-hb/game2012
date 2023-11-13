@@ -11,6 +11,9 @@ glad = subproject('glad').get_variable('glad')
 glm = dependency('glm')
 glfw = dependency('glfw3')
 
+# i'd use gltf but im a little short on time
+tinyobj = subproject('tinyobj').get_variable('tinyobj')
+
 src = [
     # imgui
     'src/imgui/imgui.cpp',
@@ -24,11 +27,12 @@ src = [
     # main
     'src/main.cpp',
     'src/mesh.cpp',
+    'src/obj.cpp',
     'src/program.cpp'
 ]
 
 executable('hello', src,
     include_directories : [ 'src' ],
-    dependencies : [ glad, glm, glfw ]
+    dependencies : [ glad, glm, glfw, tinyobj ]
 )
 
