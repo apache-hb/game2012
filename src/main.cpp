@@ -97,9 +97,37 @@ int main() {
 
     // steal some models from my game for now
     Model model0 = {
-        .mesh = loadObjMesh("data/models/default.model"),
-        .tex0 = Texture("data/images/assets/uv-coords.png"),
+        .mesh = loadObjMesh("data/monkey.model"),
+        .tex0 = Texture("data/aaaa.png"),
         .tex1 = Texture("data/images/assets/player.png")
+    };
+
+    Model model1 = {
+        .mesh = loadObjMesh("data/box.model"),
+        .tex0 = Texture("data/BoomBoxWithAxes_baseColor.png"),
+        .tex1 = Texture("data/images/store/logo44x44.png")
+    };
+
+    Model model2 = {
+        .mesh = loadObjMesh("data/ring.model"),
+        .tex0 = Texture("data/images/assets/cross.png"),
+        .tex1 = Texture("data/images/store/logo44x44.png")
+    };
+    
+    Model model3 = {
+        .mesh = loadObjMesh("data/text.model"),
+        .tex0 = Texture("data/images/assets/player.png"),
+        .tex1 = Texture("data/images/assets/meme.png")
+    };
+
+    Model model4 = {
+        .mesh = loadObjMesh("data/models/alien.model"),
+        .tex0 = Texture("data/aaaa.png"),
+        .tex1 = Texture("data/images/assets/player.png")
+    };
+
+    std::vector<Model> models = {
+        model0, model1, model2, model3, model4
     };
 
     auto uModel = glGetUniformLocation(shader, "inModel");
@@ -139,26 +167,38 @@ int main() {
 
             ImGui::SliderFloat("ratio", &ratio, 0.0f, 1.f);
             
+            for (size_t i = 0; i < models.size(); i++) {
+                auto& model = models[i];
+                ImGui::PushID(int(i));
+                ImGui::Text("Model %zu", i);
+                ImGui::SliderFloat3("position", &model.position.x, -10.f, 10.f);
+                ImGui::SliderFloat3("rotation", &model.rotation.x, -180.f, 180.f);
+                ImGui::SliderFloat3("scale", &model.scale.x, 0.1f, 10.f);
+                ImGui::PopID();
+            }
         ImGui::End();
 
         glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto model = camera.getModel();
         auto view = camera.getView();
         auto projection = camera.getProjection();
-        glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);
         glUniformMatrix4fv(uView, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, &projection[0][0]);
 
-        glUniform1f(uRatio, ratio);
+        for (auto& m : models) {
+            auto model = m.getModel();
+            glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);
 
-        model0.tex0.bind(0);
-        model0.tex1.bind(1);
-        
-        // model0.mesh.bind();
-        model0.mesh.bind();
-        model0.mesh.draw();
+            glUniform1f(uRatio, ratio);
+
+            m.tex0.bind(0);
+            m.tex1.bind(1);
+            
+            // model0.mesh.bind();
+            m.mesh.bind();
+            m.mesh.draw();
+        }
         // draw via the index buffer
         //meshes[currentMesh].draw();
 

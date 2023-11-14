@@ -58,6 +58,20 @@ struct Texture {
 };
 
 struct Model {
+    glm::vec3 position = { 0.f, 0.f, 0.f };
+    glm::vec3 rotation = { 0.f, 0.f, 0.f };
+    glm::vec3 scale = { 1.f, 1.f, 1.f };
+
+    glm::mat4x4 getModel() {
+        glm::mat4x4 model = glm::mat4x4(1.0f);
+        model = glm::translate(model, position);
+        model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
+        model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
+        model = glm::scale(model, scale);
+        return model;
+    }
+
     Mesh mesh;
     Texture tex0;
     Texture tex1;
