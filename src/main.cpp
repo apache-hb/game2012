@@ -110,6 +110,9 @@ int main() {
         .tex1 = Texture("data/images/assets/player.png")
     };
 
+    Model the_blue_monkey = model0;
+    the_blue_monkey.tex0 = Texture("data/images/assets/alien.png");
+
     Model model1 = {
         .mesh = loadObjMesh("data/box.model"),
         .tex0 = Texture("data/BoomBoxWithAxes_baseColor.png"),
@@ -138,6 +141,16 @@ int main() {
         model0, model1, model2, model3, model4
     };
 
+    AmbientLight ambientLight = {
+        .strength = 0.1f,
+        .colour = { 1.f, 1.f, 1.f }
+    };
+
+    PointLight pointLight = {
+        .position = { 0.f, 0.f, 0.f },
+        .colour = { 1.f, 1.f, 1.f }
+    };
+
     auto uModel = glGetUniformLocation(shader, "inModel");
     auto uView = glGetUniformLocation(shader, "inView");
     auto uProjection = glGetUniformLocation(shader, "inProjection");
@@ -145,6 +158,16 @@ int main() {
     auto uTexture0 = glGetUniformLocation(shader, "inTexture0");
     auto uTexture1 = glGetUniformLocation(shader, "inTexture1");
     auto uRatio = glGetUniformLocation(shader, "inRatio");
+
+    auto uAmbientLightStrength = glGetUniformLocation(shader, "inAmbientLightStrength");
+    auto uAmbientLightColour = glGetUniformLocation(shader, "inAmbientLightColour");
+
+    auto uPointLightPosition = glGetUniformLocation(shader, "inPointLightPosition");
+    auto uPointLightColour = glGetUniformLocation(shader, "inPointLightColour");
+
+    auto uSpecularStrength = glGetUniformLocation(shader, "inSpecularStrength");
+    auto uCameraPos = glGetUniformLocation(shader, "inCameraPosition");
+
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glUseProgram(shader);
@@ -175,10 +198,25 @@ int main() {
 
             ImGui::SliderFloat("ratio", &ratio, 0.0f, 1.f);
 
+            // do the ##stuff because of imguis id stack
+
+            ImGui::SeparatorText("Ambient Light");
+            ImGui::SliderFloat("strength##ambient", &ambientLight.strength, 0.f, 1.f);
+            ImGui::ColorEdit3("colour##ambient", &ambientLight.colour.x);
+
+            ImGui::SeparatorText("Point Light");
+            ImGui::SliderFloat3("position##point", &pointLight.position.x, -10.f, 10.f);
+            ImGui::ColorEdit3("colour##point", &pointLight.colour.x);
+            ImGui::SliderFloat("strength##point", &pointLight.strength, 0.f, 1.f);
+
             for (size_t i = 0; i < models.size(); i++) {
                 auto& model = models[i];
                 ImGui::PushID(int(i));
-                ImGui::Text("Model %zu", i);
+
+                char label[32];
+                sprintf(label, "Model %zu", i);
+                ImGui::SeparatorText(label);
+
                 ImGui::SliderFloat3("position", &model.position.x, -10.f, 10.f);
                 ImGui::SliderFloat3("rotation", &model.rotation.x, -180.f, 180.f);
                 ImGui::SliderFloat3("scale", &model.scale.x, 0.1f, 10.f);
@@ -194,6 +232,32 @@ int main() {
         glUniformMatrix4fv(uView, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(uProjection, 1, GL_FALSE, &projection[0][0]);
 
+        glUniform3fv(uAmbientLightColour, 1, ambientLight.colour.data());
+        glUniform3fv(uCameraPos, 1, camera.cameraPos.data());
+        glUniform1f(uSpecularStrength, pointLight.strength);
+
+        glUniform3fv(uPointLightPosition, 1, pointLight.position.data());
+        glUniform3fv(uPointLightColour, 1, pointLight.colour.data());
+
+
+
+        // draw the blue monkey
+        the_blue_monkey.position = pointLight.position;
+        the_blue_monkey.scale = { 0.1f, 0.1f, 0.1f };
+
+        the_blue_monkey.tex0.bind(0);
+        the_blue_monkey.tex0.bind(1);
+
+        glUniform1f(uAmbientLightStrength, 1.f);
+
+        glUniform1f(uRatio, 1.f);
+        glUniformMatrix4fv(uModel, 1, GL_FALSE, &the_blue_monkey.getModel()[0][0]);
+        the_blue_monkey.mesh.bind();
+        the_blue_monkey.mesh.draw();
+
+        glUniform1f(uAmbientLightStrength, ambientLight.strength);
+
+        // draw the models
         for (auto& m : models) {
             auto model = m.getModel();
             glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);

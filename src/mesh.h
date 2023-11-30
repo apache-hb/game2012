@@ -12,6 +12,7 @@ using namespace math;
 
 struct Vertex {
     float3 position;
+    float3 normal;
     float2 texcoord;
 };
 
@@ -19,6 +20,7 @@ template<>
 struct std::hash<Vertex> {
     size_t operator()(const Vertex& vertex) const {
         return std::hash<float3>()(vertex.position)
+             ^ std::hash<float3>()(vertex.normal)
              ^ std::hash<float2>()(vertex.texcoord);
     }
 };
@@ -68,10 +70,25 @@ struct Model {
     float3 scale = { 1.f, 1.f, 1.f };
 
     float4x4 getModel() const {
-        return float4x4::transform(position, rotation * kDegToRad<float>, scale);
+        // we operate on row major matrices, opengl wants column major
+        // transpose the matrix before returning it
+        return float4x4::transform(position, rotation * kDegToRad<float>, scale).transpose();
     }
 
     Mesh mesh;
     Texture tex0;
     Texture tex1;
+};
+
+struct PointLight {
+    /// position of the light
+    float3 position = { 0.f, 0.f, 0.f };
+    float3 colour = { 1.f, 1.f, 1.f };
+
+    float strength = 1.f;
+};
+
+struct AmbientLight {
+    float strength = 1.f;
+    float3 colour = { 1.f, 1.f, 1.f };
 };

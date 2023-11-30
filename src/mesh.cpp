@@ -4,6 +4,7 @@
 
 constexpr std::array<VertexAttrib, 3> vertexAttribs = {
     VertexAttrib{ 3, GL_FLOAT, offsetof(Vertex, position) },
+    VertexAttrib{ 3, GL_FLOAT, offsetof(Vertex, normal) },
     VertexAttrib{ 2, GL_FLOAT, offsetof(Vertex, texcoord) }
 };
 

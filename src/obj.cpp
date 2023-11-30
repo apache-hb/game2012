@@ -36,12 +36,13 @@ Mesh loadObjMesh(const char* path) {
     std::unordered_map<Vertex, uint16_t> uniqueVertices;
 
     const auto& vertices = attrib.vertices;
+    const auto& normals = attrib.normals;
     const auto& texcoords = attrib.texcoords;
     const auto& indices = shape.mesh.indices;
     SM_ASSERTF(vertices.size() % 3 == 0, "invalid vertex count {}", vertices.size());
     SM_ASSERTF(indices.size() % 3 == 0, "invalid index count {}", indices.size());
 
-    info("(vertices={} uvs={} indices={})", vertices.size(), texcoords.size(), indices.size());
+    info("(vertices={} normals={} uvs={} indices={})", vertices.size(), normals.size(), texcoords.size(), indices.size());
 
     auto getUvCoord = [&](int idx) {
         if (idx != -1) {
@@ -52,14 +53,24 @@ Mesh loadObjMesh(const char* path) {
         }
     };
 
+    auto getNormal = [&](int idx) {
+        if (idx != -1) {
+            auto c = float3{ normals[idx * 3 + 0], normals[idx * 3 + 1], normals[idx * 3 + 2] };
+            return c;
+        } else {
+            return float3{ 0.f, 0.f, 0.f };
+        }
+    };
+
     auto getIndex = [&](tinyobj::index_t idx) {
         auto vtx = idx.vertex_index;
         auto uv = idx.texcoord_index;
 
         float2 uvCoord = getUvCoord(uv);
+        float3 normal = getNormal(idx.normal_index);
         float3 position = { vertices[vtx * 3 + 0], vertices[vtx * 3 + 1], vertices[vtx * 3 + 2] };
 
-        Vertex vertex = { position, uvCoord };
+        Vertex vertex = { position, normal, uvCoord };
         if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
             uniqueVertices[vertex] = static_cast<uint16_t>(vertexData.size());
             vertexData.push_back(vertex);

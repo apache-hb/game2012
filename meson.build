@@ -37,6 +37,6 @@ include_directories = include_directories('src', 'src/simcoe', 'src/imgui')
 
 executable('hello', src,
     include_directories : include_directories,
-    cpp_args : [ '/wd4201', '/wd4127' ],
+    cpp_args : [ '/wd4201', '/wd4127', '-D_CRT_SECURE_NO_WARNINGS=1' ],
     dependencies : [ glad, glfw, tinyobj, stb ]
 )
