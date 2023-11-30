@@ -98,48 +98,35 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    auto vs = loadFile("data/model.vs.glsl");
-    auto fs = loadFile("data/model.fs.glsl");
+    ///
+    /// complex setup
+    ///
 
-    unsigned shader = createShader(vs.c_str(), fs.c_str());
+    auto c_vs = loadFile("data/helmet.vs.glsl");
+    auto c_fs = loadFile("data/helmet.fs.glsl");
 
-    // steal some models from my game for now
-    Model model0 = {
-        .mesh = loadObjMesh("data/monkey.model"),
-        .tex0 = Texture("data/aaaa.png"),
-        .tex1 = Texture("data/images/assets/player.png")
-    };
+    unsigned c_shader = createShader(c_vs.c_str(), c_fs.c_str());
 
-    Model the_blue_monkey = model0;
-    the_blue_monkey.tex0 = Texture("data/images/assets/alien.png");
+    ComplexModel c_helmet = loadObjModel("data/flight_helmet/helmet.model");
 
-    Model model1 = {
-        .mesh = loadObjMesh("data/box.model"),
-        .tex0 = Texture("data/BoomBoxWithAxes_baseColor.png"),
-        .tex1 = Texture("data/images/store/logo44x44.png")
-    };
+    auto c_uModel = glGetUniformLocation(c_shader, "inModel");
+    auto c_uView = glGetUniformLocation(c_shader, "inView");
+    auto c_uProjection = glGetUniformLocation(c_shader, "inProjection");
 
-    Model model2 = {
-        .mesh = loadObjMesh("data/ring.model"),
-        .tex0 = Texture("data/images/assets/cross.png"),
-        .tex1 = Texture("data/images/store/logo44x44.png")
-    };
+    auto c_uBaseColour = glGetUniformLocation(c_shader, "inBaseColour");
+    auto c_uMetallicRoughness = glGetUniformLocation(c_shader, "inMetallicRoughness");
+    auto c_uNormalMap = glGetUniformLocation(c_shader, "inNormalMap");
 
-    Model model3 = {
-        .mesh = loadObjMesh("data/text.model"),
-        .tex0 = Texture("data/images/assets/player.png"),
-        .tex1 = Texture("data/images/assets/meme.png")
-    };
+    auto c_uAmbientLightStrength = glGetUniformLocation(c_shader, "inAmbientLightStrength");
+    auto c_uAmbientLightColour = glGetUniformLocation(c_shader, "inAmbientLightColour");
 
-    Model model4 = {
-        .mesh = loadObjMesh("data/models/alien.model"),
-        .tex0 = Texture("data/aaaa.png"),
-        .tex1 = Texture("data/images/assets/player.png")
-    };
+    auto c_uPointLightPosition = glGetUniformLocation(c_shader, "inPointLightPosition");
+    auto c_uPointLightColour = glGetUniformLocation(c_shader, "inPointLightColour");
 
-    std::vector<Model> models = {
-        model0, model1, model2, model3, model4
-    };
+    auto c_uSpecularStrength = glGetUniformLocation(c_shader, "inSpecularStrength");
+    auto c_uCameraPos = glGetUniformLocation(c_shader, "inCameraPosition");
+
+    // lights
 
     AmbientLight ambientLight = {
         .strength = 0.1f,
@@ -151,30 +138,48 @@ int main() {
         .colour = { 1.f, 1.f, 1.f }
     };
 
-    auto uModel = glGetUniformLocation(shader, "inModel");
-    auto uView = glGetUniformLocation(shader, "inView");
-    auto uProjection = glGetUniformLocation(shader, "inProjection");
+    ///
+    /// simple setup
+    ///
 
-    auto uTexture0 = glGetUniformLocation(shader, "inTexture0");
-    auto uTexture1 = glGetUniformLocation(shader, "inTexture1");
-    auto uRatio = glGetUniformLocation(shader, "inRatio");
+    Model model0 = {
+        .mesh = loadObjMesh("data/monkey.model"),
+        .tex0 = Texture("data/aaaa.png"),
+        .tex1 = Texture("data/images/assets/player.png")
+    };
 
-    auto uAmbientLightStrength = glGetUniformLocation(shader, "inAmbientLightStrength");
-    auto uAmbientLightColour = glGetUniformLocation(shader, "inAmbientLightColour");
+    std::vector<Model> models = {
+        model0
+    };
 
-    auto uPointLightPosition = glGetUniformLocation(shader, "inPointLightPosition");
-    auto uPointLightColour = glGetUniformLocation(shader, "inPointLightColour");
+    Model the_blue_monkey = model0;
+    the_blue_monkey.tex0 = Texture("data/images/assets/alien.png");
 
-    auto uSpecularStrength = glGetUniformLocation(shader, "inSpecularStrength");
-    auto uCameraPos = glGetUniformLocation(shader, "inCameraPosition");
+    auto s_vs = loadFile("data/model.vs.glsl");
+    auto s_fs = loadFile("data/model.fs.glsl");
 
+    unsigned s_shader = createShader(s_vs.c_str(), s_fs.c_str());
+
+    auto s_uModel = glGetUniformLocation(s_shader, "inModel");
+    auto s_uView = glGetUniformLocation(s_shader, "inView");
+    auto s_uProjection = glGetUniformLocation(s_shader, "inProjection");
+
+    auto s_uTexture0 = glGetUniformLocation(s_shader, "inTexture0");
+    auto s_uTexture1 = glGetUniformLocation(s_shader, "inTexture1");
+    auto s_uRatio = glGetUniformLocation(s_shader, "inRatio");
+
+    auto s_uAmbientLightStrength = glGetUniformLocation(s_shader, "inAmbientLightStrength");
+    auto s_uAmbientLightColour = glGetUniformLocation(s_shader, "inAmbientLightColour");
+
+    auto s_uPointLightPosition = glGetUniformLocation(s_shader, "inPointLightPosition");
+    auto s_uPointLightColour = glGetUniformLocation(s_shader, "inPointLightColour");
+
+    auto s_uSpecularStrength = glGetUniformLocation(s_shader, "inSpecularStrength");
+    auto s_uCameraPos = glGetUniformLocation(s_shader, "inCameraPosition");
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glUseProgram(shader);
     glEnable(GL_DEPTH_TEST);
 
-    glUniform1i(uTexture0, 0);
-    glUniform1i(uTexture1, 1);
 
     float ratio = 1.f;
     ImVec4 clearColour = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -227,19 +232,26 @@ int main() {
         glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        ///
+        /// draw simple
+        ///
+        glUseProgram(s_shader);
+
+        glUniform1i(s_uTexture0, 0);
+        glUniform1i(s_uTexture1, 1);
+
         auto view = camera.getView();
         auto projection = camera.getProjection();
-        glUniformMatrix4fv(uView, 1, GL_FALSE, &view[0][0]);
-        glUniformMatrix4fv(uProjection, 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(s_uView, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(s_uProjection, 1, GL_FALSE, &projection[0][0]);
 
-        glUniform3fv(uAmbientLightColour, 1, ambientLight.colour.data());
-        glUniform3fv(uCameraPos, 1, camera.cameraPos.data());
-        glUniform1f(uSpecularStrength, pointLight.strength);
+        glUniform3fv(s_uAmbientLightColour, 1, ambientLight.colour.data());
+        glUniform3fv(s_uCameraPos, 1, camera.cameraPos.data());
+        glUniform1f(s_uSpecularStrength, pointLight.strength);
 
-        glUniform3fv(uPointLightPosition, 1, pointLight.position.data());
-        glUniform3fv(uPointLightColour, 1, pointLight.colour.data());
-
-
+        glUniform3fv(s_uPointLightPosition, 1, pointLight.position.data());
+        glUniform3fv(s_uPointLightColour, 1, pointLight.colour.data());
 
         // draw the blue monkey
         the_blue_monkey.position = pointLight.position;
@@ -248,21 +260,21 @@ int main() {
         the_blue_monkey.tex0.bind(0);
         the_blue_monkey.tex0.bind(1);
 
-        glUniform1f(uAmbientLightStrength, 1.f);
+        glUniform1f(s_uAmbientLightStrength, 1.f);
 
-        glUniform1f(uRatio, 1.f);
-        glUniformMatrix4fv(uModel, 1, GL_FALSE, &the_blue_monkey.getModel()[0][0]);
+        glUniform1f(s_uRatio, 1.f);
+        glUniformMatrix4fv(s_uModel, 1, GL_FALSE, &the_blue_monkey.getModel()[0][0]);
         the_blue_monkey.mesh.bind();
         the_blue_monkey.mesh.draw();
 
-        glUniform1f(uAmbientLightStrength, ambientLight.strength);
+        glUniform1f(s_uAmbientLightStrength, ambientLight.strength);
 
         // draw the models
         for (auto& m : models) {
             auto model = m.getModel();
-            glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);
+            glUniformMatrix4fv(s_uModel, 1, GL_FALSE, &model[0][0]);
 
-            glUniform1f(uRatio, ratio);
+            glUniform1f(s_uRatio, ratio);
 
             m.tex0.bind(0);
             m.tex1.bind(1);
@@ -273,6 +285,46 @@ int main() {
         }
         // draw via the index buffer
         //meshes[currentMesh].draw();
+
+        ///
+        /// draw complex here
+        ///
+        glUseProgram(c_shader);
+
+        // textures
+        glUniform1i(c_uBaseColour, 0);
+        glUniform1i(c_uMetallicRoughness, 1);
+        glUniform1i(c_uNormalMap, 2);
+
+        view = camera.getView();
+        projection = camera.getProjection();
+        auto model = c_helmet.getModel();
+
+        // camera view and projection
+        glUniformMatrix4fv(c_uView, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(c_uProjection, 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(c_uModel, 1, GL_FALSE, &model[0][0]);
+
+        // ambient
+        glUniform1f(c_uAmbientLightStrength, ambientLight.strength);
+        glUniform3fv(c_uAmbientLightColour, 1, ambientLight.colour.data());
+
+        // point light
+        glUniform3fv(c_uPointLightPosition, 1, pointLight.position.data());
+        glUniform3fv(c_uPointLightColour, 1, pointLight.colour.data());
+        glUniform1f(c_uSpecularStrength, pointLight.strength);
+
+        // camera
+        glUniform3fv(c_uCameraPos, 1, camera.cameraPos.data());
+
+        for (auto& node : c_helmet.nodes) {
+            node.material.base_colour.bind(0);
+            node.material.metallic_roughness.bind(1);
+            node.material.bump_map.bind(2);
+
+            node.mesh.bind();
+            node.mesh.draw();
+        }
 
         ImGui::EndFrame();
 

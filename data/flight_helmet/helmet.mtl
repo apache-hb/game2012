@@ -1,0 +1,73 @@
+# Blender 4.0.1 MTL File: 'None'
+# www.blender.org
+
+newmtl GlassPlasticMat
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd FlightHelmet_Materials_GlassPlasticMat_BaseColor.png
+map_Ks FlightHelmet_Materials_GlassPlasticMat_OcclusionRoughMetal.png
+map_Bump -bm 1.000000 FlightHelmet_Materials_GlassPlasticMat_Normal.png
+
+newmtl HoseMat
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd FlightHelmet_Materials_RubberWoodMat_BaseColor.png
+map_Ks FlightHelmet_Materials_RubberWoodMat_OcclusionRoughMetal.png
+map_Bump -bm 1.000000 FlightHelmet_Materials_RubberWoodMat_Normal.png
+
+newmtl LeatherPartsMat
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd FlightHelmet_Materials_LeatherPartsMat_BaseColor.png
+map_Ks FlightHelmet_Materials_LeatherPartsMat_OcclusionRoughMetal.png
+map_Bump -bm 1.000000 FlightHelmet_Materials_LeatherPartsMat_Normal.png
+
+newmtl LensesMat
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd FlightHelmet_Materials_LensesMat_BaseColor.png
+map_Ks FlightHelmet_Materials_LensesMat_OcclusionRoughMetal.png
+map_Bump -bm 1.000000 FlightHelmet_Materials_LensesMat_Normal.png
+
+newmtl MetalPartsMat
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd FlightHelmet_Materials_MetalPartsMat_BaseColor.png
+map_Ks FlightHelmet_Materials_MetalPartsMat_OcclusionRoughMetal.png
+map_Bump -bm 1.000000 FlightHelmet_Materials_MetalPartsMat_Normal.png
+
+newmtl RubberWoodMat
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd FlightHelmet_Materials_RubberWoodMat_BaseColor.png
+map_Ks FlightHelmet_Materials_RubberWoodMat_OcclusionRoughMetal.png
+map_Bump -bm 1.000000 FlightHelmet_Materials_RubberWoodMat_Normal.png
