@@ -8,7 +8,6 @@ project('hello', [ 'c', 'cpp' ],
 )
 
 glad = subproject('glad').get_variable('glad')
-glm = dependency('glm')
 glfw = dependency('glfw3')
 stb = subproject('stb').get_variable('stb')
 
@@ -34,10 +33,10 @@ src = [
     'src/gui.cpp'
 ]
 
-include_directories = include_directories('src', 'src/simcoe')
+include_directories = include_directories('src', 'src/simcoe', 'src/imgui')
 
 executable('hello', src,
     include_directories : include_directories,
-    cpp_args : [ '/wd4201' ],
-    dependencies : [ glad, glm, glfw, tinyobj, stb ]
+    cpp_args : [ '/wd4201', '/wd4127' ],
+    dependencies : [ glad, glfw, tinyobj, stb ]
 )
