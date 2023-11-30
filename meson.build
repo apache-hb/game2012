@@ -30,11 +30,14 @@ src = [
     'src/mesh.cpp',
     'src/obj.cpp',
     'src/texture.cpp',
-    'src/program.cpp'
+    'src/program.cpp',
+    'src/gui.cpp'
 ]
 
+include_directories = include_directories('src', 'src/simcoe')
+
 executable('hello', src,
-    include_directories : [ 'src' ],
-    cpp_args : [ '-DGLM_ENABLE_EXPERIMENTAL=1', '/wd4201' ],
+    include_directories : include_directories,
+    cpp_args : [ '/wd4201' ],
     dependencies : [ glad, glm, glfw, tinyobj, stb ]
 )

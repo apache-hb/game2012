@@ -3,20 +3,23 @@
 #include <span>
 #include <array>
 
-#include <glm/glm.hpp>
-#include <glm/gtx/hash.hpp>
+#include "simcoe/math/math.h"
+#include "simcoe/math/hash.h"
 
 #include "glad/glad.h"
 
+using namespace math;
+
 struct Vertex {
-    glm::vec3 position;
-    glm::vec2 texcoord;
+    float3 position;
+    float2 texcoord;
 };
 
 template<>
 struct std::hash<Vertex> {
     size_t operator()(const Vertex& vertex) const {
-        return std::hash<glm::vec3>()(vertex.position) ^ std::hash<glm::vec2>()(vertex.texcoord);
+        return std::hash<float3>()(vertex.position)
+             ^ std::hash<float2>()(vertex.texcoord);
     }
 };
 
@@ -58,18 +61,14 @@ struct Texture {
 };
 
 struct Model {
-    glm::vec3 position = { 0.f, 0.f, 0.f };
-    glm::vec3 rotation = { 0.f, 0.f, 0.f };
-    glm::vec3 scale = { 1.f, 1.f, 1.f };
+    float3 position = { 0.f, 0.f, 0.f };
 
-    glm::mat4x4 getModel() {
-        glm::mat4x4 model = glm::mat4x4(1.0f);
-        model = glm::translate(model, position);
-        model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
-        model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
-        model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
-        model = glm::scale(model, scale);
-        return model;
+    /// stored in Degrees, couldnt get the template to work properly so trust me on this one
+    float3 rotation = { 0.f, 0.f, 0.f };
+    float3 scale = { 1.f, 1.f, 1.f };
+
+    float4x4 getModel() const {
+        return float4x4::transform(position, rotation * kDegToRad<float>, scale);
     }
 
     Mesh mesh;

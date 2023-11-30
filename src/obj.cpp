@@ -45,10 +45,10 @@ Mesh loadObjMesh(const char* path) {
 
     auto getUvCoord = [&](int idx) {
         if (idx != -1) {
-            auto c = glm::vec2{ texcoords[idx * 2 + 0], texcoords[idx * 2 + 1] };
+            auto c = float2{ texcoords[idx * 2 + 0], texcoords[idx * 2 + 1] };
             return c;
         } else {
-            return glm::vec2{ 0.f, 0.f };
+            return float2{ 0.f, 0.f };
         }
     };
 
@@ -56,8 +56,8 @@ Mesh loadObjMesh(const char* path) {
         auto vtx = idx.vertex_index;
         auto uv = idx.texcoord_index;
 
-        glm::vec2 uvCoord = getUvCoord(uv);
-        glm::vec3 position = { vertices[vtx * 3 + 0], vertices[vtx * 3 + 1], vertices[vtx * 3 + 2] };
+        float2 uvCoord = getUvCoord(uv);
+        float3 position = { vertices[vtx * 3 + 0], vertices[vtx * 3 + 1], vertices[vtx * 3 + 2] };
 
         Vertex vertex = { position, uvCoord };
         if (uniqueVertices.find(vertex) == uniqueVertices.end()) {

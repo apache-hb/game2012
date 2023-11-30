@@ -9,9 +9,12 @@
 #include <array>
 #include <vector>
 
+#include "simcoe/core/panic.h"
+
 #include "program.h"
 #include "mesh.h"
-#include "camera.h" // terrible header higiene, this depends on glad but doesnt include it
+#include "camera.h"
+#include "gui.h"
 
 #include <cmath>
 
@@ -113,7 +116,7 @@ int main() {
         .tex0 = Texture("data/images/assets/cross.png"),
         .tex1 = Texture("data/images/store/logo44x44.png")
     };
-    
+
     Model model3 = {
         .mesh = loadObjMesh("data/text.model"),
         .tex0 = Texture("data/images/assets/player.png"),
@@ -161,12 +164,12 @@ int main() {
             ImGui::InputFloat3("position", &camera.cameraPos.x);
             ImGui::InputFloat3("direction", &camera.cameraFront.x);
 
-            ImGui::InputFloat("fov", &camera.fov);
+            ImGui::SliderDegrees("fov", &camera.fov);
             ImGui::InputFloat("speed", &camera.speed);
             ImGui::InputFloat("sensitivity", &camera.sensitivity);
 
             ImGui::SliderFloat("ratio", &ratio, 0.0f, 1.f);
-            
+
             for (size_t i = 0; i < models.size(); i++) {
                 auto& model = models[i];
                 ImGui::PushID(int(i));
@@ -194,7 +197,7 @@ int main() {
 
             m.tex0.bind(0);
             m.tex1.bind(1);
-            
+
             // model0.mesh.bind();
             m.mesh.bind();
             m.mesh.draw();
