@@ -300,9 +300,13 @@ namespace math {
     };
 
     template<typename T>
+    struct Mat4x4;
+
+    template<typename T>
     struct Mat3x3 {
         using Type = T;
         using RowType = Vec3<T>;
+        using Mat4x4Type = Mat4x4<T>;
 
         RowType rows[3];
 
@@ -311,12 +315,20 @@ namespace math {
         constexpr Mat3x3(const RowType& row) : Mat3x3(row, row, row) { }
         constexpr Mat3x3(const RowType& row0, const RowType& row1, const RowType& row2) : rows{ row0, row1, row2 } { }
 
+        constexpr Mat3x3(const Mat4x4Type& other) : Mat3x3(
+            RowType(other.at(0).xyz()),
+            RowType(other.at(1).xyz()),
+            RowType(other.at(2).xyz())
+        ) { }
+
         static constexpr Mat3x3 identity() {
             RowType row1 = { 1, 0, 0 };
             RowType row2 = { 0, 1, 0 };
             RowType row3 = { 0, 0, 1 };
             return { row1, row2, row3 };
         }
+
+        constexpr RowType at(size_t it) const { return rows[it]; }
     };
 
     template<typename T>
@@ -324,6 +336,7 @@ namespace math {
         using Type = T;
         using RowType = Vec4<T>;
         using Row3Type = Vec3<T>;
+        using Mat3x3Type = Mat3x3<T>;
 
         RowType rows[4];
 
@@ -332,6 +345,13 @@ namespace math {
         constexpr Mat4x4(const RowType& row) : Mat4x4(row, row, row, row) { }
         constexpr Mat4x4(const RowType& row0, const RowType& row1, const RowType& row2, const RowType& row3) : rows{ row0, row1, row2, row3 } { }
         constexpr Mat4x4(const T *pData) : Mat4x4(RowType(pData), RowType(pData + 4), RowType(pData + 8), RowType(pData + 12)) { }
+
+        constexpr Mat4x4(const Mat3x3Type& other) : Mat4x4(
+            RowType(other.at(0), 0),
+            RowType(other.at(1), 0),
+            RowType(other.at(2), 0),
+            RowType(0, 0, 0, 1)
+        ) { }
 
         constexpr RowType column(size_t column) const {
             return { at(column, 0), at(column, 1), at(column, 2), at(column, 3) };

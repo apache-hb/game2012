@@ -40,6 +40,10 @@ struct Camera {
         return float4x4::lookAtRH(cameraPos, cameraPos + cameraFront, cameraUp);
     }
 
+    float4x4 getCubemapView() {
+        return float4x4(float3x3(getView()));
+    }
+
     float4x4 getProjection() {
         return float4x4::perspectiveRH(math::radians(fov), screenWidth / screenHeight, 0.1f, 100.0f);
     }

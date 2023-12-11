@@ -1,4 +1,5 @@
 
+#include "cubemap.h"
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
@@ -17,6 +18,78 @@
 #include "gui.h"
 
 Camera camera;
+
+float cubemap_verts[] = {
+    // positions
+    -1.0f,  1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+    1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+    -1.0f,  1.0f, -1.0f,
+    1.0f,  1.0f, -1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+    1.0f, -1.0f,  1.0f
+};
+
+struct CubeMapObject {
+    unsigned vao;
+    unsigned vbo;
+    unsigned texture;
+
+    CubeMapObject() {
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cubemap_verts), cubemap_verts, GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    }
+
+    void draw() {
+        glBindVertexArray(vao);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+    }
+};
 
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -97,6 +170,28 @@ int main() {
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
+
+    ///
+    /// cubemap setup
+    ///
+
+    auto m_vs = loadFile("data/cubemap.vs.glsl");
+    auto m_fs = loadFile("data/cubemap.fs.glsl");
+
+    CubeMap cubemap("data/skybox.png");
+
+    unsigned m_shader = createShader(m_vs.c_str(), m_fs.c_str());
+    auto m_uView = glGetUniformLocation(m_shader, "inView");
+    auto m_uProjection = glGetUniformLocation(m_shader, "inProjection");
+    auto m_uCubemap = glGetUniformLocation(m_shader, "inCubemap");
+
+    glUseProgram(m_shader);
+    glUniformMatrix4fv(m_uProjection, 1, GL_FALSE, &camera.getProjection()[0][0]);
+    glUniformMatrix4fv(m_uView, 1, GL_FALSE, &camera.getView()[0][0]);
+    glUniform1i(m_uCubemap, 0);
+
+    CubeMapObject cubeMapObject;
+    cubeMapObject.texture = cubemap.id;
 
     ///
     /// complex setup
@@ -232,7 +327,6 @@ int main() {
         glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
         ///
         /// draw simple
         ///
@@ -325,6 +419,22 @@ int main() {
             node.mesh.bind();
             node.mesh.draw();
         }
+
+        ///
+        /// draw cubemap
+        ///
+
+        glDepthFunc(GL_LEQUAL);
+        glUseProgram(m_shader);
+
+        float4x4 m = camera.getCubemapView().transpose();
+        float4x4 p = camera.getProjection().transpose();
+
+        glUniformMatrix4fv(m_uProjection, 1, GL_FALSE, &p[0][0]);
+        glUniformMatrix4fv(m_uView, 1, GL_FALSE, &m[0][0]);
+
+        cubeMapObject.draw();
+        glDepthFunc(GL_LESS);
 
         ImGui::EndFrame();
 

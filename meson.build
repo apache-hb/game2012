@@ -30,7 +30,8 @@ src = [
     'src/obj.cpp',
     'src/texture.cpp',
     'src/program.cpp',
-    'src/gui.cpp'
+    'src/gui.cpp',
+    'src/cubemap.cpp',
 ]
 
 include_directories = include_directories('src', 'src/simcoe', 'src/imgui')
