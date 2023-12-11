@@ -178,7 +178,7 @@ int main() {
     auto m_vs = loadFile("data/cubemap.vs.glsl");
     auto m_fs = loadFile("data/cubemap.fs.glsl");
 
-    CubeMap cubemap("data/skybox.png");
+    CubeMap cubemap("data/lakeskypreview.jpg");
 
     unsigned m_shader = createShader(m_vs.c_str(), m_fs.c_str());
     auto m_uView = glGetUniformLocation(m_shader, "inView");

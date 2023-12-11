@@ -9,7 +9,8 @@ in vec3 normal;
 
 // texture info
 uniform sampler2D inBaseColour;
-uniform sampler2D inMetallicRoughness; // green channel is roughness, blue channel is metallic
+// green channel is roughness, blue channel is metallic, red channel is ambient occlusion
+uniform sampler2D inMetallicRoughness;
 uniform sampler2D inNormalMap;
 
 // ambient light
