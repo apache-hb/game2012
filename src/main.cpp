@@ -183,7 +183,7 @@ int main() {
     unsigned m_shader = createShader(m_vs.c_str(), m_fs.c_str());
     auto m_uView = glGetUniformLocation(m_shader, "inView");
     auto m_uProjection = glGetUniformLocation(m_shader, "inProjection");
-    auto m_uCubemap = glGetUniformLocation(m_shader, "inCubemap");
+    auto m_uCubemap = glGetUniformLocation(m_shader, "inSkybox");
 
     glUseProgram(m_shader);
     glUniform1i(m_uCubemap, 0);
@@ -209,6 +209,7 @@ int main() {
     auto c_uBaseColour = glGetUniformLocation(c_shader, "inBaseColour");
     auto c_uMetallicRoughness = glGetUniformLocation(c_shader, "inMetallicRoughness");
     auto c_uNormalMap = glGetUniformLocation(c_shader, "inNormalMap");
+    auto c_uSkybox = glGetUniformLocation(c_shader, "inSkybox");
 
     auto c_uAmbientLightStrength = glGetUniformLocation(c_shader, "inAmbientLightStrength");
     auto c_uAmbientLightColour = glGetUniformLocation(c_shader, "inAmbientLightColour");
@@ -383,10 +384,14 @@ int main() {
         ///
         glUseProgram(c_shader);
 
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.id);
+
         // textures
         glUniform1i(c_uBaseColour, 0);
         glUniform1i(c_uMetallicRoughness, 1);
         glUniform1i(c_uNormalMap, 2);
+        glUniform1i(c_uSkybox, 3);
 
         view = camera.getView();
         projection = camera.getProjection();

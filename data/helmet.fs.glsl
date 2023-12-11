@@ -13,6 +13,10 @@ uniform sampler2D inBaseColour;
 uniform sampler2D inMetallicRoughness;
 uniform sampler2D inNormalMap;
 
+// cant be bothered to do irradiance maps and stuff
+// lets just pull from a skybox
+uniform samplerCube inSkybox;
+
 // ambient light
 uniform float inAmbientLightStrength;
 uniform vec3  inAmbientLightColour;
@@ -25,7 +29,7 @@ uniform float inSpecularStrength;
 // camera
 uniform vec3  inCameraPosition;
 
-#define PI 3.1415926535897932384626433832795
+#define PI 3.14159265359
 
 vec3 get_normal() {
     vec3 tangent_normal = texture(inNormalMap, texcoord).xyz * 2.0 - 1.0;
@@ -132,11 +136,14 @@ void main() {
     kd = 1.0 - ks;
     kd *= 1.0 - metallic;
 
-    vec3 ambient = kd * albedo * ao;
-    vec3 diffuse = kd * albedo * lo;
-    vec3 specular2 = ks * lo;
+    vec3 irradiance = texture(inSkybox, N).rgb;
+    vec3 diffuse = irradiance * albedo;
 
-    vec3 colour = ambient + diffuse + specular2;
+    vec3 specular2 = specular * radiance * ndotl;
+
+    vec3 ambient = (kd * diffuse + specular2) * ao;
+
+    vec3 colour = ambient + lo;
 
     FragColor = vec4(colour, 1.0);
 }
