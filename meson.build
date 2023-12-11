@@ -1,7 +1,7 @@
 project('hello', [ 'c', 'cpp' ],
     default_options : [
         'cpp_std=c++20',
-        'warning_level=3',
+        'warning_level=2',
         'default_library=static',
         'werror=true'
     ]
@@ -35,8 +35,10 @@ src = [
 
 include_directories = include_directories('src', 'src/simcoe', 'src/imgui')
 
+cpp = meson.get_compiler('cpp')
+
 executable('hello', src,
     include_directories : include_directories,
-    cpp_args : [ '/wd4201', '/wd4127', '-D_CRT_SECURE_NO_WARNINGS=1' ],
+    cpp_args : cpp.get_supported_arguments('/wd4201', '/wd4127', '-D_CRT_SECURE_NO_WARNINGS=1'),
     dependencies : [ glad, glfw, tinyobj, stb ]
 )

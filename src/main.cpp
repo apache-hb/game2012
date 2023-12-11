@@ -149,7 +149,7 @@ int main() {
     };
 
     std::vector<Model> models = {
-        model0
+        //model0
     };
 
     Model the_blue_monkey = model0;
