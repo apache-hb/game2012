@@ -186,8 +186,6 @@ int main() {
     auto m_uCubemap = glGetUniformLocation(m_shader, "inCubemap");
 
     glUseProgram(m_shader);
-    glUniformMatrix4fv(m_uProjection, 1, GL_FALSE, &camera.getProjection()[0][0]);
-    glUniformMatrix4fv(m_uView, 1, GL_FALSE, &camera.getView()[0][0]);
     glUniform1i(m_uCubemap, 0);
 
     CubeMapObject cubeMapObject;
@@ -427,8 +425,8 @@ int main() {
         glDepthFunc(GL_LEQUAL);
         glUseProgram(m_shader);
 
-        float4x4 m = camera.getCubemapView().transpose();
-        float4x4 p = camera.getProjection().transpose();
+        float4x4 m = camera.getCubemapView();
+        float4x4 p = camera.getProjection();
 
         glUniformMatrix4fv(m_uProjection, 1, GL_FALSE, &p[0][0]);
         glUniformMatrix4fv(m_uView, 1, GL_FALSE, &m[0][0]);
